@@ -1,0 +1,21 @@
+{
+  "name": "wordmade-certification",
+  "description": "Wordmade AI Certification — inverse CAPTCHA skill for AI agent verification",
+  "version": "1.0.0",
+  "author": {
+    "name": "jotavich",
+    "url": "https://github.com/jotavich"
+  },
+  "repository": "https://github.com/wordmade/wordmade-certification-plugin",
+  "keywords": [
+    "certification",
+    "captcha",
+    "inverse-captcha",
+    "verification",
+    "agent",
+    "AI",
+    "challenge",
+    "widget"
+  ],
+  "license": "MIT"
+}

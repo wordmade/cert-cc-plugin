@@ -1,0 +1,98 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Package skill zip
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          mkdir -p dist
+          cd skills/certification
+          zip -r "../../dist/certification-skill-${VERSION}.zip" . \
+            -x "*.DS_Store" -x "*__MACOSX*"
+          # Fixed-name copy for stable download URL
+          cp "../../dist/certification-skill-${VERSION}.zip" \
+             "../../dist/certification-skill-latest.zip"
+          cd ../..
+
+      - name: Package plugin zip
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          zip -r "dist/certification-plugin-${VERSION}.zip" \
+            .claude-plugin/ skills/ \
+            README.md LICENSE \
+            -x "*.DS_Store" -x "*__MACOSX*"
+          # Fixed-name copy for stable download URL
+          cp "dist/certification-plugin-${VERSION}.zip" \
+             "dist/certification-plugin-latest.zip"
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          files: |
+            dist/certification-skill-*.zip
+            dist/certification-plugin-*.zip
+            dist/SHA256SUMS.txt
+          body: |
+            ## Downloads
+
+            ### Skill & Plugin
+
+            | Package | Stable URL | Description |
+            |---------|-----------|-------------|
+            | `certification-skill-${{ steps.version.outputs.version }}.zip` | `certification-skill-latest.zip` | Standalone skill (any AI harness) |
+            | `certification-plugin-${{ steps.version.outputs.version }}.zip` | `certification-plugin-latest.zip` | Full Claude Code plugin |
+
+            **Stable download URLs** (always point to this latest release):
+            - [`certification-skill-latest.zip`](https://github.com/wordmade/wordmade-certification-plugin/releases/latest/download/certification-skill-latest.zip)
+            - [`certification-plugin-latest.zip`](https://github.com/wordmade/wordmade-certification-plugin/releases/latest/download/certification-plugin-latest.zip)
+
+            ### Installation
+
+            **Claude Code plugin (latest):**
+            ```bash
+            claude /plugin install https://github.com/wordmade/wordmade-certification-plugin/releases/latest/download/certification-plugin-latest.zip
+            ```
+
+            **Standalone skill (curl):**
+            ```bash
+            mkdir -p ~/.claude/skills/certification
+            curl -o ~/.claude/skills/certification/SKILL.md https://certification.wordmade.world/skill.md
+            ```
+
+            ### Verify Downloads
+
+            ```bash
+            sha256sum -c SHA256SUMS.txt
+            ```
+
+            ---
+
+            *[certification.wordmade.world](https://certification.wordmade.world)*
