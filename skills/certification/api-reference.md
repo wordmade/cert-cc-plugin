@@ -7,14 +7,11 @@ The Wordmade Certification API is an AI verification service -- an **inverse CAP
 
 This document covers all endpoints, request/response formats, and integration patterns. A developer should be able to integrate with this document alone.
 
-## Base URLs
+## Base URL
 
-| Environment | Base URL |
-|-------------|----------|
-| Production | `https://certification.wordmade.world` |
-| Staging | `https://certification.staging.wordmade.world` |
-| Dev | `https://certification.dev.wordmade.world` |
-| Local (stack0) | `http://localhost:8086` |
+```
+https://certification.wordmade.world
+```
 
 ---
 
@@ -329,7 +326,7 @@ Server-side verification for third parties receiving certificates from agents. T
 This endpoint operates in two modes:
 
 1. **Multi-tenant mode** (recommended): When `site_key` is provided, validates the secret against the site's stored secrets, tracks usage per site, checks customer quota, and enforces per-site minimum level.
-2. **Legacy mode**: When no `site_key` is provided, validates against the globally configured `CERTIFICATION_SITEVERIFY_SECRET`.
+2. **Legacy mode**: When no `site_key` is provided, validates against a globally configured secret.
 
 #### Request
 
@@ -361,7 +358,7 @@ Content-Type: application/json
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `certificate` | string | Yes | The certificate token received from the agent. |
-| `secret` | string | Yes* | Site secret key (`sk_sec_...`) in multi-tenant mode, or global secret in legacy mode. *Required when `site_key` is provided or when `CERTIFICATION_SITEVERIFY_SECRET` is configured. |
+| `secret` | string | Yes* | Site secret key (`sk_sec_...`) in multi-tenant mode, or global secret in legacy mode. *Required when `site_key` is provided. |
 | `site_key` | string | No | Site public key (`sk_pub_...`). When provided, enables multi-tenant mode with per-site secret validation and usage tracking. |
 | `remoteip` | string | No | Client IP address for audit logging. |
 
@@ -525,7 +522,7 @@ Content-Type: application/json
     "email": "dev@example.com",
     "company_name": "Acme Corp",
     "tier": "pro",
-    "monthly_quota": 100000,
+    "monthly_quota": 500000,
     "status": "active",
     "created_at": "2026-01-15T08:30:00Z",
     "updated_at": "2026-02-01T10:00:00Z",
@@ -625,7 +622,7 @@ Authorization: Bearer <session_token>
     "email": "dev@example.com",
     "company_name": "Acme Corp",
     "tier": "pro",
-    "monthly_quota": 100000,
+    "monthly_quota": 500000,
     "status": "active",
     "totp_enabled": false,
     "created_at": "2026-01-15T08:30:00Z",
@@ -1233,7 +1230,7 @@ Content-Type: application/json
     "email": "dev@example.com",
     "company_name": "Acme Corp",
     "tier": "pro",
-    "monthly_quota": 100000,
+    "monthly_quota": 500000,
     "status": "active",
     "created_at": "2026-01-15T08:30:00Z",
     "updated_at": "2026-02-01T10:00:00Z",
@@ -1710,9 +1707,9 @@ Authorization: Bearer <session_token>
   },
   "quota": {
     "tier": "pro",
-    "monthly_limit": 100000,
+    "monthly_limit": 500000,
     "current_month_used": 12500,
-    "remaining": 87500,
+    "remaining": 487500,
     "exceeded": false,
     "unlimited": false
   }
@@ -1813,9 +1810,9 @@ Authorization: Bearer <session_token>
 ```json
 {
   "tier": "pro",
-  "monthly_limit": 100000,
+  "monthly_limit": 500000,
   "current_month_used": 12500,
-  "remaining": 87500,
+  "remaining": 487500,
   "exceeded": false,
   "unlimited": false,
   "period": "2026-02"
@@ -1868,7 +1865,7 @@ Authorization: Bearer <session_token>
     {
       "year_month": "2026-01",
       "verifications": 45200,
-      "billable_amount": 49.00,
+      "billable_amount": 19.00,
       "billed": true,
       "billed_at": "2026-02-01T00:00:00Z"
     }
@@ -1984,16 +1981,16 @@ Authorization: Bearer <session_token>
 ```json
 {
   "tier": "pro",
-  "monthly_quota": 100000,
+  "monthly_quota": 500000,
   "started_at": "2026-01-15T08:30:00Z",
   "expires_at": "2026-02-15T08:30:00Z",
-  "price_cents": 4900
+  "price_cents": 1900
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `tier` | string | Current tier: `free`, `pro`, or `enterprise`. |
+| `tier` | string | Current tier: `free`, `starter`, `pro`, or `enterprise`. |
 | `monthly_quota` | integer/null | Monthly verification limit. `null` for unlimited. |
 | `started_at` | string | When the subscription started (omitted for free tier). |
 | `expires_at` | string | When the subscription expires (omitted for free tier). |
@@ -2003,7 +2000,7 @@ Authorization: Bearer <session_token>
 
 #### POST /api/v1/subscription/checkout
 
-Initiate a subscription upgrade. In mock mode (local development), the upgrade is applied immediately. In Stripe mode, returns a checkout URL.
+Initiate a subscription upgrade. Returns a checkout URL for payment processing.
 
 **Rate limit:** 120 requests/minute per IP
 
@@ -2025,29 +2022,17 @@ Content-Type: application/json
 |-------|------|----------|-------------|
 | `target_tier` | string | Yes | Target tier. Must be `pro`. Enterprise requires a custom agreement (contact sales). To downgrade to free, use `/subscription/cancel`. |
 
-##### Response -- Mock Mode (Local Dev)
+##### Response
 
 **HTTP 200**
 
 ```json
 {
-  "success": true,
-  "tier": "pro",
-  "message": "Subscription updated to pro (+8500 prorated quota)"
+  "checkout_url": "https://checkout.stripe.com/c/pay/cs_..."
 }
 ```
 
-##### Response -- Stripe Mode
-
-**HTTP 200**
-
-```json
-{
-  "checkout_url": "https://checkout.stripe.com/c/pay/cs_test_a1b2c3..."
-}
-```
-
-The client should redirect to `checkout_url`. After successful payment, Stripe sends a `checkout.session.completed` webhook that completes the upgrade.
+The client should redirect to `checkout_url`. After successful payment, the upgrade is applied automatically.
 
 ##### Errors
 
@@ -2125,7 +2110,7 @@ Authorization: Bearer <session_token>
       "new_tier": "pro",
       "change_type": "upgrade",
       "prorated_quota": 8500,
-      "provider": "mock",
+      "provider": "stripe",
       "created_at": "2026-02-01T10:00:00Z"
     },
     {
@@ -2147,7 +2132,7 @@ Authorization: Bearer <session_token>
 | `new_tier` | string | Tier after the change. |
 | `change_type` | string | Type of change: `upgrade`, `downgrade`, `cancel`, `expiry`. |
 | `prorated_quota` | integer | Prorated quota adjustment applied during the change. |
-| `provider` | string | Payment provider: `mock` or `stripe`. |
+| `provider` | string | Payment provider (e.g. `stripe`). |
 | `notes` | string | Optional notes about the change. |
 
 ---
@@ -2195,67 +2180,14 @@ Other event types are logged and acknowledged with HTTP 200.
 
 | Tier | Monthly Verifications | Max Sites | Price |
 |------|----------------------|-----------|-------|
-| Free | 10,000 | 5 | $0/mo |
-| Pro | 100,000 | 50 | $49/mo |
+| Free | 1,000 | 3 | $0/mo |
+| Starter | 10,000 | 5 | $5/mo |
+| Pro | 500,000 | 50 | $19/mo |
 | Enterprise | Unlimited | 500 | Custom |
 
 Enterprise tier requires a custom agreement -- self-service checkout is not available.
 
 When a customer's monthly quota is exhausted, siteverify calls return the `quota-exceeded` error code. Challenge and respond endpoints continue to work (they do not count toward quota), but siteverify will reject verification requests until the next billing period.
-
----
-
-## Internal Endpoints
-
-These endpoints are intended for infrastructure health checks and monitoring. In production, they should be blocked from external access via firewall rules (all under the `/internal/` prefix).
-
-### GET /internal/health
-
-Liveness probe. Returns HTTP 200 with body `OK` if the server is running.
-
-```http
-GET /internal/health
-```
-
-```
-HTTP/1.1 200 OK
-
-OK
-```
-
-### GET /internal/ready
-
-Readiness probe. Returns HTTP 200 with JSON if the server is ready to accept traffic.
-
-```http
-GET /internal/ready
-```
-
-```json
-{
-  "ready": true
-}
-```
-
-### GET /internal/stats
-
-Service statistics including challenge and verification counters.
-
-```http
-GET /internal/stats
-```
-
-```json
-{
-  "total_challenges": 15420,
-  "total_responses": 14800,
-  "total_verified": 12500,
-  "total_rejected": 2300,
-  "pool_size": 1500,
-  "max_level": 5,
-  "pool_min_multiplier": 100
-}
-```
 
 ---
 
@@ -2285,7 +2217,7 @@ Comprehensive documentation for all integration parties (site owners, developers
 
 ### Widget Demo
 
-- `/demo`, `/customize` -- Interactive HTML page for customizing the widget theme and previewing the embed.
+- `/demo`, `/customize` -- Interactive widget customizer and live preview.
 
 ### Embeddable Widget
 
@@ -2444,7 +2376,7 @@ Agent                    Your Server              Certification API
 ## CORS Policy
 
 - **Inverse CAPTCHA endpoints** (`/v1/*`): Wildcard `Access-Control-Allow-Origin: *` -- the widget is embedded on arbitrary third-party websites.
-- **Customer Portal API** (`/api/v1/*`): If `CERTIFICATION_CORS_ORIGINS` is configured, only listed origins are allowed. Otherwise, falls back to wildcard (development-friendly default).
+- **Customer Portal API** (`/api/v1/*`): Restricted to allowed origins in production.
 - **Allowed methods**: `GET, POST, PATCH, DELETE, OPTIONS`
 - **Allowed headers**: `Content-Type, Authorization, X-Challenge-Signature`
 - **Exposed headers**: `X-Challenge-Signature`
@@ -2468,28 +2400,3 @@ Request body size limit: 256 KB for all POST/PUT/PATCH requests.
 
 ---
 
-## Environment Variables
-
-Key environment variables for configuring the certification service.
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `WORDMADE_CERTIFICATION_LISTEN_ADDR` | `:8086` | HTTP listen address |
-| `WORDMADE_CERTIFICATION_METRICS_ADDR` | `:9096` | Prometheus metrics address |
-| `WORDMADE_CERTIFICATION_HMAC_SECRET` | (internal default) | Challenge signing secret |
-| `WORDMADE_CERTIFICATION_JWT_SECRET` | (internal default) | Certificate signing secret (single key) |
-| `WORDMADE_CERTIFICATION_JWT_SECRETS` | (none) | Multi-key config: `kid1:base64secret1,kid2:base64secret2` |
-| `WORDMADE_CERTIFICATION_SITEVERIFY_SECRET` | (none) | Global siteverify secret (legacy mode) |
-| `WORDMADE_CERTIFICATION_DEMO_MODE` | `false` | Lenient scoring (85% pass rate) for development |
-| `WORDMADE_CERTIFICATION_ENVIRONMENT` | `production` | Environment: `production`, `staging`, `dev`, `demo` |
-| `WORDMADE_CERTIFICATION_DATABASE_URL` | (postgres default) | PostgreSQL connection URL for customer portal |
-| `WORDMADE_CERTIFICATION_MAX_LEVEL` | `5` | Maximum challenge level served (1-5) |
-| `WORDMADE_CERTIFICATION_POOL_MIN_MULTIPLIER` | `100` | Minimum formula multiplier |
-| `WORDMADE_CERTIFICATION_CORS_ORIGINS` | (none) | Comma-separated allowed origins for portal API |
-| `WORDMADE_CERTIFICATION_PAYMENT_MODE` | `mock` | Payment mode: `mock`, `test`, `live` |
-| `WORDMADE_CERTIFICATION_PUBLIC_URL` | `http://localhost:8089` | Public URL for checkout redirects |
-| `WORDMADE_CERTIFICATION_TOTP_ENCRYPTION_KEY` | (none) | AES-256-GCM key for encrypting TOTP secrets at rest. Required for 2FA. Generate with: `openssl rand -hex 32` |
-| `WORDMADE_CERTIFICATION_STRIPE_SECRET_KEY` | (none) | Stripe API secret key (only for `test`/`live` payment mode) |
-| `WORDMADE_CERTIFICATION_STRIPE_WEBHOOK_SECRET` | (none) | Stripe webhook signing secret (only for `test`/`live` payment mode) |
-
-Rate limit overrides follow the pattern `WORDMADE_CERTIFICATION_RATELIMIT_{ENDPOINT}` with a numeric value (requests per minute).
