@@ -2040,7 +2040,7 @@ The client should redirect to `checkout_url`. After successful payment, the upgr
 |--------|-----------|
 | 400 | Invalid tier, already on target tier, Enterprise requires sales, use cancel for free |
 | 401 | Not authenticated |
-| 503 | Payment processing not configured (Stripe mode without configuration) |
+| 503 | Payment processing not available |
 | 500 | Internal error |
 
 ---
@@ -2176,16 +2176,9 @@ Other event types are logged and acknowledged with HTTP 200.
 
 ---
 
-## Tier Limits
+## Quotas and Limits
 
-| Tier | Monthly Verifications | Max Sites | Price |
-|------|----------------------|-----------|-------|
-| Free | 1,000 | 3 | $0/mo |
-| Starter | 10,000 | 5 | $5/mo |
-| Pro | 500,000 | 50 | $19/mo |
-| Enterprise | Unlimited | 500 | Custom |
-
-Enterprise tier requires a custom agreement -- self-service checkout is not available.
+Each tier has a monthly verification quota and a maximum number of sites. See the [pricing page](https://certification.wordmade.world/#pricing) for current tiers and pricing.
 
 When a customer's monthly quota is exhausted, siteverify calls return the `quota-exceeded` error code. Challenge and respond endpoints continue to work (they do not count toward quota), but siteverify will reject verification requests until the next billing period.
 
