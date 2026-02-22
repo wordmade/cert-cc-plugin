@@ -36,17 +36,10 @@ jobs:
           echo "Scanning for internal references that should not be public..."
           FAILED=0
 
-          # Strict scan: SKILL.md, plugin.json, README.md (no localhost allowed)
+          # Strict scan: all plugin content (no localhost, no internal refs)
           if grep -rn "docs/architecture/\|sources/internal/\|huru-io\|localhost:[0-9]\|stack[0-9]" \
             skills/certification/SKILL.md .claude-plugin/ README.md 2>/dev/null; then
-            echo "ERROR: Found internal references in strict-scan files."
-            FAILED=1
-          fi
-
-          # Relaxed scan: api-reference.md (localhost OK — it documents local dev setup)
-          if grep -rn "docs/architecture/\|sources/internal/\|huru-io\|stack[0-9]" \
-            skills/certification/api-reference.md 2>/dev/null; then
-            echo "ERROR: Found internal references in api-reference.md."
+            echo "ERROR: Found internal references."
             FAILED=1
           fi
 

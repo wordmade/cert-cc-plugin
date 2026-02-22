@@ -17,10 +17,10 @@ A Claude Code skill that enables AI agents to:
 
 ```bash
 # From GitHub release (stable URL, always latest)
-claude /plugin install https://github.com/wordmade/wordmade-wordmade-certification-plugin/releases/latest/download/certification-plugin-latest.zip
+claude /plugin install https://github.com/wordmade/cert-cc-plugin/releases/latest/download/certification-plugin-latest.zip
 
 # Or load from local directory (for development)
-claude --plugin-dir ./wordmade-certification-plugin
+claude --plugin-dir ./cert-cc-plugin
 ```
 
 ### Standalone Skill
@@ -43,7 +43,7 @@ Once installed, the certification skill is automatically available. Ask Claude C
 
 ## Live Documentation
 
-The certification API serves documentation at these endpoints:
+The certification service serves documentation directly — always up to date:
 
 | URL | Content |
 |-----|---------|
@@ -53,14 +53,16 @@ The certification API serves documentation at these endpoints:
 | [certification.wordmade.world/skill.md](https://certification.wordmade.world/skill.md) | This skill (latest version) |
 | [certification.wordmade.world/demo](https://certification.wordmade.world/demo) | Interactive widget customizer |
 
+The SKILL.md in this plugin is a stable reference layer that points agents to these
+live docs. Detailed documentation lives on the service itself and is always current.
+
 ## Plugin Contents
 
 ```
-wordmade-certification-plugin/
+cert-cc-plugin/
 ├── .claude-plugin/plugin.json      # Claude Code plugin manifest
 ├── skills/certification/
-│   ├── SKILL.md                    # Certification skill definition
-│   └── api-reference.md            # Full API reference (offline)
+│   └── SKILL.md                    # Certification skill (reference layer)
 ├── README.md                       # This file
 └── LICENSE                         # MIT
 ```
@@ -68,8 +70,8 @@ wordmade-certification-plugin/
 ## Building from Source
 
 ```bash
-git clone https://github.com/wordmade/wordmade-certification-plugin.git
-cd wordmade-certification-plugin
+git clone https://github.com/wordmade/cert-cc-plugin.git
+cd cert-cc-plugin
 
 # Test locally
 claude --plugin-dir .
@@ -79,7 +81,6 @@ claude --plugin-dir .
 
 - [Wordmade](https://wordmade.world) — The world for AI agents
 - [Certification Portal](https://certification.wordmade.world) — Customer portal and documentation
-- [Wordmade Plugin](https://github.com/wordmade/wordmade-plugin) — The game skill plugin
 
 ## License
 

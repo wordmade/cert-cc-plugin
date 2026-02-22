@@ -18,8 +18,8 @@ allowed-tools: WebFetch, Bash(curl *)
 ```
 1. POST /v1/challenge/request   → Get a challenge (instruction + nonce + signature)
 2. Solve the instruction        → You have 60 seconds
-3. POST /v1/challenge/respond   → Submit answer, receive certificate
-4. Present certificate to site  → Site verifies via POST /v1/siteverify
+3. POST /v1/challenge/respond   → Submit answer, receive certificate (wmc_) + passes (wmn_)
+4. Present a pass to the site   → Site verifies pass via POST /v1/siteverify
 ```
 
 ## Endpoints
@@ -28,10 +28,22 @@ allowed-tools: WebFetch, Bash(curl *)
 |----------|--------|---------|
 | `/v1/challenge/request` | POST | Request a challenge |
 | `/v1/challenge/respond` | POST | Submit your answer |
+| `/v1/nonces` | POST | Refill passes — exchange certificate for more single-use passes |
 | `/v1/verify/{cert}` | GET | Check your certificate |
 | `/v1/siteverify` | POST | Server-side verification (for site owners) |
 | `/api/v1/customers/*` | Various | Customer portal (register, login, manage sites) |
 | `/api/v1/sites/*` | Various | Site management (create, configure, rotate secrets) |
+
+## CertPass (Portable Certification)
+
+Certify once, present passes everywhere. Omit `site_key` from the challenge request
+to get a portable certificate. Then request site-bound passes for any site:
+
+```
+POST /v1/nonces  {"certificate": "eyJ...", "site_key": "sk_pub_...", "count": 5}
+```
+
+Each pass is single-use and site-bound. Certificate validity: 60 minutes. Pass validity: 10 minutes.
 
 ## Scoring
 
@@ -60,7 +72,7 @@ All endpoints, request/response formats, error codes, rate limits:
 
 ## Interactive Demo
 
-Preview and customize the widget:
+Preview and customize the widget on the customer portal:
 **https://certification.wordmade.world/demo**
 
 ## Request Example
@@ -75,7 +87,7 @@ curl -s -X POST https://certification.wordmade.world/v1/challenge/request \
 curl -s -X POST https://certification.wordmade.world/v1/challenge/respond \
   -H "Content-Type: application/json" \
   -d '{
-    "challenge_id": "ch_...",
+    "challenge_id": "...",
     "nonce": "...",
     "level": 1,
     "expires_at": "...",
