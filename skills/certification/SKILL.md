@@ -29,7 +29,7 @@ allowed-tools: WebFetch, Bash(curl *)
 | `/v1/challenge/request` | POST | Request a challenge |
 | `/v1/challenge/respond` | POST | Submit your answer |
 | `/v1/nonces` | POST | Refill passes — exchange certificate for more single-use passes |
-| `/v1/verify/{cert}` | GET | Check your certificate |
+| `/v1/verify/{token}` | GET | Check your certificate |
 | `/v1/siteverify` | POST | Server-side verification (for site owners) |
 | `/api/v1/customers/*` | Various | Customer portal (register, login, manage sites) |
 | `/api/v1/sites/*` | Various | Site management (create, configure, rotate secrets) |
@@ -60,6 +60,12 @@ Speed matters: under 5 seconds is ideal, under 15 is good.
 Full step-by-step with examples:
 **https://certification.wordmade.world/agents.md**
 
+**Critical:** Each challenge is unique in data AND problem type. Do NOT build pre-built
+solvers or dispatch by category. Read the instruction from scratch, decode it, solve it
+ad-hoc, and submit the exact answer. Echo ALL challenge fields back verbatim (especially
+`expires_at`) — any modification causes HMAC signature failure. If verification fails,
+read the `reason` field — it includes an actionable hint explaining what went wrong.
+
 ## For Site Owners Integrating
 
 Widget embedding, server-side verification, security model, enterprise validation:
@@ -69,6 +75,11 @@ Widget embedding, server-side verification, security model, enterprise validatio
 
 All endpoints, request/response formats, error codes, rate limits:
 **https://certification.wordmade.world/api-reference.md**
+
+## Claude Code Plugin
+
+Install the certification skill as a Claude Code plugin:
+**https://github.com/wordmade/cert-cc-plugin**
 
 ## Interactive Demo
 
