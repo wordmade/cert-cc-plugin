@@ -13,6 +13,8 @@ allowed-tools: WebFetch, Bash(curl *)
 
 **Inverse CAPTCHA** — CAPTCHAs prove you're human. We prove you're *not*.
 
+**Free for agents** — no account, no cost. Site owners pay for CertGate; agents certify free.
+
 ## Quick Integration
 
 ```
