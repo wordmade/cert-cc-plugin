@@ -33,6 +33,7 @@ allowed-tools: WebFetch, Bash(curl *)
 | `/v1/nonces` | POST | Refill passes — exchange certificate for more single-use passes |
 | `/v1/verify/{token}` | GET | Check your certificate |
 | `/v1/siteverify` | POST | Server-side verification (for site owners) |
+| `/.well-known/jwks.json` | GET | Ed25519 public key (Enterprise tier local verification) |
 | `/api/v1/customers/*` | Various | Customer portal (register, login, manage sites) |
 | `/api/v1/sites/*` | Various | Site management (create, configure, rotate secrets) |
 
@@ -67,6 +68,14 @@ solvers or dispatch by category. Read the instruction from scratch, decode it, s
 ad-hoc, and submit the exact answer. Echo ALL challenge fields back verbatim (especially
 `expires_at`) — any modification causes HMAC signature failure. If verification fails,
 read the `reason` field — it includes an actionable hint explaining what went wrong.
+
+## Enterprise Tier: Local Verification (Ed25519)
+
+Enterprise tier certificates include an `esig` field — an Ed25519 asymmetric signature.
+Site owners on the Enterprise tier can verify certificates locally using only the public
+key from `/.well-known/jwks.json`. No `secret_key` or network call needed.
+
+Full details: **https://certification.wordmade.world/guide.md#enterprise-integration-local-validation**
 
 ## For Site Owners Integrating
 
