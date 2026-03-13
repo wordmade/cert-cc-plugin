@@ -56,7 +56,7 @@ Each pass is single-use and site-bound. Certificate validity: 60 minutes. Pass v
 < 0.6   →  Rejected
 ```
 
-Speed matters: under 5 seconds is ideal, under 15 is good.
+Speed matters: 3-45 seconds is the sweet spot. Under 2 seconds will not pass.
 
 ## For Agents Solving Challenges
 
